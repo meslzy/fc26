@@ -1,0 +1,71 @@
+{
+	"compilerOptions": {
+		// Project Structure
+		"baseUrl": "src",
+    "rootDir": "src",
+    "paths": {
+      "~/*": [
+        "./*"
+      ]
+    },
+		// Type Checking
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"alwaysStrict": true,
+		"exactOptionalPropertyTypes": false,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": false,
+		"noImplicitOverride": false,
+		"noImplicitReturns": false,
+		"noImplicitThis": true,
+		"noPropertyAccessFromIndexSignature": false,
+		"noUncheckedIndexedAccess": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": false,
+		"strict": true,
+		"strictBindCallApply": true,
+		"strictFunctionTypes": true,
+		"strictNullChecks": true,
+		"strictPropertyInitialization": false,
+		"useUnknownInCatchVariables": true,
+		// Modules
+		"allowImportingTsExtensions": true,
+		"allowUmdGlobalAccess": false,
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"moduleDetection": "force",
+		"resolveJsonModule": true,
+		// Emit
+		"declaration": true,
+		"newLine": "lf",
+		"noEmit": true,
+		"noEmitHelpers": true,
+		// JavaScript,
+		"allowJs": true,
+		"checkJs": false,
+		// Editor Support
+		"disableSizeLimit": false,
+		// Interop Constraints
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"preserveSymlinks": true,
+		// Language and Environment
+		"lib": ["esnext", "dom", "dom.iterable"],
+		"target": "esnext",
+		"jsx": "react-jsx",
+		// Compiler Diagnostics
+		"listFiles": false,
+		// Projects
+		"composite": false,
+		"incremental": false,
+		// Output Formatting
+		"pretty": true,
+		// Completeness
+		"skipLibCheck": true
+	},
+	"include": [
+    ".plasmo/index.d.ts",
+    "src"
+  ]
+}

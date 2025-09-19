@@ -1,0 +1,38 @@
+{
+  "name": "fc26",
+  "displayName": "Your fc26 companion",
+  "description": "Your fc26 companion",
+  "version": "1.0.0",
+  "author": "Meslzy <i@meslzy.com>",
+  "packageManager": "bun@1.2.17",
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "plasmo": "0.90.5",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@meslzy/tsconfig": "0.2.9",
+    "@types/chrome": "0.1.12",
+    "@types/node": "24.5.2",
+    "@types/react": "19.1.13",
+    "@types/react-dom": "19.1.9",
+    "typescript": "5.9.2",
+    "@biomejs/biome": "^2.2.4"
+  },
+  "manifest": {
+    "permissions": [
+      "tabs",
+      "activeTab",
+      "scripting",
+      "webRequest"
+    ],
+    "host_permissions": [
+      "https://*.ea.com/*"
+    ]
+  }
+}
