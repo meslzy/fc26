@@ -41,6 +41,16 @@
 		],
 		"host_permissions": [
 			"https://*.ea.com/*"
+		],
+		"web_accessible_resources": [
+			{
+				"resources": [
+					"*.mp3"
+				],
+				"matches": [
+					"https://*.ea.com/*"
+				]
+			}
 		]
 	}
 }
