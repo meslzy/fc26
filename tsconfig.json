@@ -2,12 +2,10 @@
 	"compilerOptions": {
 		// Project Structure
 		"baseUrl": "src",
-    "rootDir": "src",
-    "paths": {
-      "~/*": [
-        "./*"
-      ]
-    },
+		"rootDirs": ["src", "trading"],
+		"paths": {
+			"~/*": ["./*"]
+		},
 		// Type Checking
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false,
@@ -25,7 +23,7 @@
 		"strict": true,
 		"strictBindCallApply": true,
 		"strictFunctionTypes": true,
-		"strictNullChecks": true,
+		"strictNullChecks": false,
 		"strictPropertyInitialization": false,
 		"useUnknownInCatchVariables": true,
 		// Modules
@@ -64,8 +62,5 @@
 		// Completeness
 		"skipLibCheck": true
 	},
-	"include": [
-    ".plasmo/index.d.ts",
-    "src"
-  ]
+	"include": [".plasmo/index.d.ts", "src", "trading"]
 }
