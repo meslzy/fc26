@@ -65,6 +65,11 @@ The project is in early development stage with a minimal popup component. The co
 - React JSX transformation enabled
 - Source maps and development tools configured
 
+## Styling
+
+- Biome used for code formatting with specific rules for indentation, quotes, and semicolons
+- Never write comments in the codebase
+
 ## Author
 
 Developed by Meslzy (<i@meslzy.com>)

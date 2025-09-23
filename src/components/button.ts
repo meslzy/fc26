@@ -1,7 +1,7 @@
 export interface ButtonProps {
   value: string;
   onclick: () => void;
-  variant?: "primary";
+  variant?: "primary" | "danger";
   size?: "mini";
   style?: Partial<CSSStyleDeclaration>;
 }
@@ -14,8 +14,15 @@ export const createButton = (props: ButtonProps) => {
   button.textContent = value;
   button.classList.add("btn-standard");
 
-  if (variant === "primary") button.classList.add("primary");
   if (size === "mini") button.classList.add("mini");
+
+  if (variant === "primary") button.classList.add("primary");
+
+  if (variant === "danger") {
+    button.style.backgroundColor = "#d9534f";
+    button.style.color = "#fcfcfc";
+    button.style.border = "none";
+  }
 
   Object.assign(button.style, style);
 
