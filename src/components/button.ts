@@ -1,7 +1,7 @@
 export interface ButtonProps {
   value: string;
   onclick: () => void;
-  variant?: "primary" | "danger";
+  variant?: "primary" | "danger" | "secondary";
   size?: "mini";
   style?: Partial<CSSStyleDeclaration>;
 }
@@ -17,6 +17,12 @@ export const createButton = (props: ButtonProps) => {
   if (size === "mini") button.classList.add("mini");
 
   if (variant === "primary") button.classList.add("primary");
+
+  if (variant === "secondary") {
+    button.style.border = "1px solid rgba(255, 255, 255, 0.2)";
+    button.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+    button.style.color = "#fcfcfc";
+  }
 
   if (variant === "danger") {
     button.style.backgroundColor = "#d9534f";
