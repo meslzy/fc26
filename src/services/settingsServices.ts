@@ -166,7 +166,7 @@ export class SettingsService {
       inputValue: currentRandomMinBid.amount.toString(),
       inputPlaceholder: "Enter min amount",
       inputType: "tel",
-      inputMin: 0,
+      inputMin: 150,
       inputMax: 14_999_000,
       onCheckboxChange: (checked) => {
         this.settingsManager.updateRandomMinBid(checked);
@@ -185,7 +185,7 @@ export class SettingsService {
       inputValue: currentRandomMinBuy.amount.toString(),
       inputPlaceholder: "Enter min amount",
       inputType: "tel",
-      inputMin: 0,
+      inputMin: 200,
       inputMax: 15_000_000,
       onCheckboxChange: (checked) => {
         this.settingsManager.updateRandomMinBuy(checked);
@@ -208,7 +208,7 @@ export class SettingsService {
     const container = this.createTabContentContainer("Safety Settings");
 
     const currentDelayBetweenSearches = this.settingsManager.getDelayBetweenSearches();
-    const currentEnableCycles = this.settingsManager.getEnableCycles();
+    const currentCyclesEnabled = this.settingsManager.getCyclesEnabled();
     const currentCyclesCount = this.settingsManager.getCyclesCount();
     const currentDelayBetweenCycles = this.settingsManager.getDelayBetweenCycles();
 
@@ -250,7 +250,7 @@ export class SettingsService {
 
     const enableCyclesCheckbox = createCheckbox({
       label: "Enable Cycles (Take breaks after a certain number of searches)",
-      checked: currentEnableCycles,
+      checked: currentCyclesEnabled,
       onchange: (checked) => {
         this.settingsManager.enableCycles(checked);
         cyclesCount.setDisabled(!checked);
@@ -258,8 +258,8 @@ export class SettingsService {
       },
     });
 
-    cyclesCount.setDisabled(!currentEnableCycles);
-    delayBetweenCycles.setDisabled(!currentEnableCycles);
+    cyclesCount.setDisabled(!currentCyclesEnabled);
+    delayBetweenCycles.setDisabled(!currentCyclesEnabled);
 
     container.appendChild(delayBetweenSearches.container);
     container.appendChild(enableCyclesCheckbox.container);
