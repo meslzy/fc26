@@ -8,7 +8,7 @@ export class StaticService {
 			background-color: #201f26;
 			border-radius: 16px;
 			overflow: hidden;
-			padding: 24px;
+			padding: 16px;
 			display: grid;
 			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
 			gap: 12px;
@@ -20,7 +20,8 @@ export class StaticService {
 		statItem.style.cssText = `
 			background: #2d2c36;
 			border-radius: 8px;
-			padding: 12px;
+			padding: 8px;
+			height: max-content;
 			text-align: center;
 			transition: all 0.3s ease;
 		`;

@@ -18,7 +18,7 @@ export interface Settings {
 			min: number;
 			max: number;
 		};
-		enableCycles: boolean;
+		enabledCycles: boolean;
 		cyclesCount: {
 			min: number;
 			max: number;
@@ -52,7 +52,7 @@ export class SettingsManager {
 					min: 4,
 					max: 7,
 				},
-				enableCycles: true,
+				enabledCycles: true,
 				cyclesCount: {
 					min: 5,
 					max: 10,
@@ -112,7 +112,7 @@ export class SettingsManager {
 	}
 
 	enableCycles(enabled: boolean) {
-		this.settings.safety.enableCycles = enabled;
+		this.settings.safety.enabledCycles = enabled;
 		this.saveSettings();
 	}
 
@@ -140,8 +140,8 @@ export class SettingsManager {
 		return this.settings.safety.delayBetweenSearches;
 	}
 
-	getEnableCycles(): boolean {
-		return this.settings.safety.enableCycles;
+	getCyclesEnabled(): boolean {
+		return this.settings.safety.enabledCycles;
 	}
 
 	getCyclesCount(): { min: number; max: number } {
