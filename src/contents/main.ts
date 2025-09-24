@@ -17,7 +17,7 @@ const filterService = new FilterService();
 const staticService = new StaticService();
 const loggerService = new LoggerService();
 const sniperService = new SniperService();
-const settingsService = new SettingsService();
+const settingsService = new SettingsService(loggerService);
 
 sniperService.onSettingsClick = () => {
 	settingsService.showSettings();

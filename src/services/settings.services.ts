@@ -1,10 +1,6 @@
 import { createButton } from "~/components/button";
-import {
-  createCheckbox,
-  createCheckboxInput,
-  createInput,
-  createRangeInput,
-} from "~/components/form";
+import { createCheckboxInput, createRangeInput } from "~/components/form";
+import type { LoggerService } from "./loggerService";
 
 export class SettingsService {
   private modal: HTMLElement;
@@ -13,7 +9,7 @@ export class SettingsService {
   private modalCloseButton: HTMLButtonElement;
   private tabContainer: HTMLElement;
   private contentContainer: HTMLElement;
-  private currentTab: string = "Safety";
+  private currentTab: string = "Search";
   private tabs: Map<string, () => HTMLElement> = new Map();
 
   private createModal() {
@@ -128,71 +124,78 @@ export class SettingsService {
     }
   }
 
-  private createSafetyTabContent(): HTMLElement {
+  private createTabContentContainer(title: string): HTMLElement {
     const container = document.createElement("div");
     container.style.display = "flex";
     container.style.flexDirection = "column";
     container.style.gap = "12px";
 
-    const title = document.createElement("h3");
-    title.textContent = "Safety Settings";
-    title.style.color = "#fcfcfc";
-    title.style.fontSize = "16px";
-    container.appendChild(title);
+    const header = document.createElement("h3");
+    header.textContent = title;
+    header.style.color = "#fcfcfc";
+    header.style.fontSize = "16px";
+    container.appendChild(header);
 
-    const delayInput = createInput({
-      label: "Delay Between Search",
-      type: "tel",
-      value: "1000",
-      placeholder: "Enter delay in milliseconds",
-      min: 100,
-      max: 10000,
-      onchange: (value) => {
-        console.log("Delay changed:", value);
-      },
-    });
+    return container;
+  }
 
-    container.appendChild(delayInput.container);
+  private createSearchTabContent(): HTMLElement {
+    const container = this.createTabContentContainer("Search Settings");
 
-    const enableCheckbox = createCheckbox({
-      label: "Enable Safety Mode",
-      checked: true,
-      onchange: (checked) => {
-        console.log("Safety mode:", checked);
-      },
-    });
-
-    container.appendChild(enableCheckbox.container);
-
-    const priceRange = createRangeInput({
-      label: "Price Range",
-      minValue: 1000,
-      maxValue: 50000,
-      minLabel: "Min Price",
-      maxLabel: "Max Price",
-      onMinChange: (value) => {
-        console.log("Min price changed:", value);
-      },
-      onMaxChange: (value) => {
-        console.log("Max price changed:", value);
-      },
-    });
-
-    container.appendChild(priceRange.container);
-
-    const stopSearchControl = createCheckboxInput({
-      label: "Stop Search After",
+    const randomMinBidControl = createCheckboxInput({
+      label: "Random Min Bid Buy",
       checked: false,
-      inputValue: "100",
-      inputPlaceholder: "Enter number of searches",
+      inputValue: "150",
+      inputPlaceholder: "Enter min amount",
       inputType: "tel",
-      inputMin: 1,
-      inputMax: 1000,
-      onCheckboxChange: (checked) => console.log("Stop enabled:", checked),
-      onInputChange: (value) => console.log("Stop after:", value)
+      inputMin: 0,
+      inputMax: 14_999_000,
+      onCheckboxChange: (checked) => {
+        this.loggerService.addLog(`Random min bid enabled: ${checked}`, "system");
+      },
+      onInputChange: (value) => {
+        this.loggerService.addLog(`Random min bid amount: ${value}`, "system");
+      },
     });
 
-    container.appendChild(stopSearchControl.container);
+    const randomMinBuyControl = createCheckboxInput({
+      label: "Use Random Min Buy",
+      checked: false,
+      inputValue: "150",
+      inputPlaceholder: "Enter min amount",
+      inputType: "tel",
+      inputMin: 0,
+      inputMax: 15_000_000,
+      onCheckboxChange: (checked) => {
+        this.loggerService.addLog(`Random min buy enabled: ${checked}`, "system");
+      },
+      onInputChange: (value) => {
+        this.loggerService.addLog(`Random min buy amount: ${value}`, "system");
+      },
+    });
+
+    container.appendChild(randomMinBidControl.container);
+    container.appendChild(randomMinBuyControl.container);
+
+    return container;
+  }
+
+  private createSafetyTabContent(): HTMLElement {
+    const container = this.createTabContentContainer("Safety Settings");
+
+    const delayBetweenSearches = createRangeInput({
+      label: "Delay Between Searches (Selected randomly between min and max)",
+      minLabel: "Min (seconds)",
+      maxLabel: "Max (seconds)",
+      minBound: 1,
+      defaultMinValue: 4,
+      defaultMaxValue: 7,
+      onchange: (min, max) => {
+        this.loggerService.addLog(`Delay between searches set to: ${min}s - ${max}s`, "system");
+      },
+    });
+
+    container.appendChild(delayBetweenSearches.container);
 
     return container;
   }
@@ -205,8 +208,9 @@ export class SettingsService {
     }
   }
 
-  constructor() {
+  constructor(private loggerService: LoggerService) {
     this.createModal();
+    this.addTab("Search", () => this.createSearchTabContent());
     this.addTab("Safety", () => this.createSafetyTabContent());
   }
 
