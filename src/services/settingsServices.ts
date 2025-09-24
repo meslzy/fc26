@@ -298,4 +298,8 @@ export class SettingsService {
     this.updateTabButtons();
     this.updateContentContainer();
   };
+
+  getSettings = () => {
+    return this.settingsManager.settings;
+  }
 }

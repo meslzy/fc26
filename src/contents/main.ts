@@ -1,4 +1,5 @@
 import type { PlasmoCSConfig } from "plasmo";
+import type { SearchBucket } from "~/core/bucket";
 import { FilterManager } from "~/managers/filterManager";
 import { SearchManager } from "~/managers/searchManager";
 import { SettingsManager } from "~/managers/settingsManager";
@@ -10,7 +11,6 @@ import { SettingsService } from "~/services/settingsServices";
 import { SniperService } from "~/services/sniperService";
 import { StaticService } from "~/services/staticService";
 import { UserService } from "~/services/userService";
-import type { SearchBucket } from "~/types/fc";
 
 export const config: PlasmoCSConfig = {
 	all_frames: false,

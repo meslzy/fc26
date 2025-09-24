@@ -1,6 +1,7 @@
 import { createButton, createStaticButton } from "~/components/button";
+import { SearchBucket } from "~/core/bucket";
 import type { FilterManager } from "~/managers/filterManager";
-import { SearchBucket } from "~/types/fc";
+import type { SearchCriteria } from "~/managers/searchManager";
 
 export class FilterService {
 	private buttonContainer: HTMLElement;
@@ -285,6 +286,10 @@ export class FilterService {
 
 	getSearchBucket(): SearchBucket {
 		return this.searchBucket;
+	}
+
+	getSearchCriterias(): SearchCriteria[] {
+		return this.filterManager.getSearchCriterias(this.searchBucket);
 	}
 
 	onSearchBucket = (searchBucket: SearchBucket) => {

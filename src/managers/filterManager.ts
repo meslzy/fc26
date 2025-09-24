@@ -1,4 +1,4 @@
-import type { SearchBucket } from "~/types/fc";
+import type { SearchBucket } from "~/core/bucket";
 import type {
 	PlayerData,
 	SearchCriteria,
@@ -226,5 +226,23 @@ export class FilterManager {
 
 	getTotalCount(searchBucket: SearchBucket): number {
 		return this.filters.filter((f) => f.searchBucket === searchBucket).length;
+	}
+
+	getSearchCriterias(searchBucket: SearchBucket): SearchCriteria[] {
+		const selectedIds = this.selectedFilters.get(searchBucket) || new Set();
+
+		const criteria: SearchCriteria[] = [];
+
+		for (const filter of this.filters) {
+			if (selectedIds.has(filter.id)) {
+				criteria.push(filter.searchCriteria);
+			}
+		}
+
+		if (criteria.length === 0) {
+			criteria.push(this.searchManager.getSearchCriteria());
+		}
+
+		return criteria;
 	}
 }

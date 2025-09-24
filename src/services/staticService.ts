@@ -54,6 +54,8 @@ export class StaticService {
 	constructor() {
 		this.createStatsContainer();
 		this.set("Searches", "0");
+		this.set("Wins", "0");
+		this.set("Fails", "0");
 	}
 
 	init = (container: HTMLElement) => {

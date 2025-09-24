@@ -1,3 +1,24 @@
+const style = document.createElement("style");
+style.textContent = `
+  .secondary {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fcfcfc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  .secondary.hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+  .danger {
+    background-color: #d9534f;
+    color: #fcfcfc;
+    border: none;
+  }
+  .danger.hover:not(:disabled) {
+    background-color: #c9302c;
+  }
+`;
+document.head.appendChild(style);
+
 export interface ButtonProps {
   value: string;
   onclick: () => void;
@@ -17,18 +38,8 @@ export const createButton = (props: ButtonProps) => {
   if (size === "mini") button.classList.add("mini");
 
   if (variant === "primary") button.classList.add("primary");
-
-  if (variant === "secondary") {
-    button.style.border = "1px solid rgba(255, 255, 255, 0.2)";
-    button.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
-    button.style.color = "#fcfcfc";
-  }
-
-  if (variant === "danger") {
-    button.style.backgroundColor = "#d9534f";
-    button.style.color = "#fcfcfc";
-    button.style.border = "none";
-  }
+  if (variant === "secondary") button.classList.add("secondary");
+  if (variant === "danger") button.classList.add("danger");
 
   Object.assign(button.style, style);
 
