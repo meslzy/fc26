@@ -283,6 +283,10 @@ export class FilterService {
 		this.updateSelectedCount();
 	}
 
+	getSearchBucket(): SearchBucket {
+		return this.searchBucket;
+	}
+
 	onSearchBucket = (searchBucket: SearchBucket) => {
 		if (this.editingFilterId) {
 			this.exitEditMode();

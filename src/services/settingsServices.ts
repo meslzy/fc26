@@ -1,5 +1,5 @@
 import { createButton } from "~/components/button";
-import { createCheckboxInput, createRangeInput } from "~/components/form";
+import { createCheckbox, createCheckboxInput, createRangeInput } from "~/components/form";
 import type { SettingsManager } from "~/managers/settingsManager";
 
 export class SettingsService {
@@ -133,7 +133,7 @@ export class SettingsService {
     const header = document.createElement("h3");
     header.textContent = title;
     header.style.color = "#fcfcfc";
-    header.style.fontSize = "16px";
+    header.style.fontSize = "22px";
     container.appendChild(header);
 
     return container;
@@ -142,7 +142,24 @@ export class SettingsService {
   private createSearchTabContent(): HTMLElement {
     const container = this.createTabContentContainer("Search Settings");
 
+    const enableDryBuyCheckbox = createCheckbox({
+      label: "Enable Dry Buy (Simulate purchases without actually buying)",
+      checked: this.settingsManager.settings.search.enableDryBuy,
+      onchange: (checked) => {
+        this.settingsManager.enableDryBuy(checked);
+      },
+    });
+
+    const enableSoundCheckbox = createCheckbox({
+      label: "Enable Sound Notifications",
+      checked: this.settingsManager.settings.search.enableSound,
+      onchange: (checked) => {
+        this.settingsManager.enableSound(checked);
+      },
+    });
+
     const currentRandomMinBid = this.settingsManager.getRandomMinBid();
+
     const randomMinBidControl = createCheckboxInput({
       label: "Random Min Bid Buy",
       checked: currentRandomMinBid.enabled,
@@ -161,6 +178,7 @@ export class SettingsService {
     });
 
     const currentRandomMinBuy = this.settingsManager.getRandomMinBuy();
+
     const randomMinBuyControl = createCheckboxInput({
       label: "Use Random Min Buy",
       checked: currentRandomMinBuy.enabled,
@@ -178,6 +196,8 @@ export class SettingsService {
       },
     });
 
+    container.appendChild(enableDryBuyCheckbox.container);
+    container.appendChild(enableSoundCheckbox.container);
     container.appendChild(randomMinBidControl.container);
     container.appendChild(randomMinBuyControl.container);
 
@@ -188,6 +208,10 @@ export class SettingsService {
     const container = this.createTabContentContainer("Safety Settings");
 
     const currentDelayBetweenSearches = this.settingsManager.getDelayBetweenSearches();
+    const currentEnableCycles = this.settingsManager.getEnableCycles();
+    const currentCyclesCount = this.settingsManager.getCyclesCount();
+    const currentDelayBetweenCycles = this.settingsManager.getDelayBetweenCycles();
+
     const delayBetweenSearches = createRangeInput({
       label: "Delay Between Searches (Selected randomly between min and max)",
       minLabel: "Min (seconds)",
@@ -200,7 +224,47 @@ export class SettingsService {
       },
     });
 
+    const cyclesCount = createRangeInput({
+      label: "Number of Searches per Cycle (Selected randomly between min and max)",
+      minLabel: "Min searches",
+      maxLabel: "Max searches",
+      minBound: 1,
+      defaultMinValue: currentCyclesCount.min,
+      defaultMaxValue: currentCyclesCount.max,
+      onchange: (min, max) => {
+        this.settingsManager.updateCyclesCount(min, max);
+      },
+    });
+
+    const delayBetweenCycles = createRangeInput({
+      label: "Delay Between Cycles (Selected randomly between min and max)",
+      minLabel: "Min (seconds)",
+      maxLabel: "Max (seconds)",
+      minBound: 1,
+      defaultMinValue: currentDelayBetweenCycles.min,
+      defaultMaxValue: currentDelayBetweenCycles.max,
+      onchange: (min, max) => {
+        this.settingsManager.updateDelayBetweenCycles(min, max);
+      },
+    });
+
+    const enableCyclesCheckbox = createCheckbox({
+      label: "Enable Cycles (Take breaks after a certain number of searches)",
+      checked: currentEnableCycles,
+      onchange: (checked) => {
+        this.settingsManager.enableCycles(checked);
+        cyclesCount.setDisabled(!checked);
+        delayBetweenCycles.setDisabled(!checked);
+      },
+    });
+
+    cyclesCount.setDisabled(!currentEnableCycles);
+    delayBetweenCycles.setDisabled(!currentEnableCycles);
+
     container.appendChild(delayBetweenSearches.container);
+    container.appendChild(enableCyclesCheckbox.container);
+    container.appendChild(cyclesCount.container);
+    container.appendChild(delayBetweenCycles.container);
 
     return container;
   }
@@ -219,6 +283,10 @@ export class SettingsService {
     this.createModal();
     this.addTab("Search", () => this.createSearchTabContent());
     this.addTab("Safety", () => this.createSafetyTabContent());
+  }
+
+  get settings() {
+    return this.settingsManager.settings;
   }
 
   init = (container: HTMLElement) => {

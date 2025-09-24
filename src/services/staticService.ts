@@ -72,6 +72,15 @@ export class StaticService {
 		}
 	}
 
+	get(key: string): string {
+		if (this.statsMap.has(key)) {
+			const statItem = this.statsMap.get(key)!;
+			const valueElement = statItem.querySelector("div:last-child") as HTMLElement;
+			return valueElement.textContent || "0";
+		}
+		return "0";
+	}
+
 	increment(key: string) {
 		const current = this.get(key);
 		const newValue = (parseInt(current, 10) || 0) + 1;
@@ -82,15 +91,6 @@ export class StaticService {
 		const current = this.get(key);
 		const newValue = Math.max((parseInt(current, 10) || 0) - 1, 0);
 		this.set(key, newValue.toString());
-	}
-
-	get(key: string): string {
-		if (this.statsMap.has(key)) {
-			const statItem = this.statsMap.get(key)!;
-			const valueElement = statItem.querySelector("div:last-child") as HTMLElement;
-			return valueElement.textContent || "0";
-		}
-		return "0";
 	}
 
 	remove(key: string) {

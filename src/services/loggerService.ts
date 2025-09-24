@@ -24,11 +24,7 @@ export class LoggerService {
 
     this.logContainer.appendChild(this.logContent);
 
-    this.addLog("test info");
-    this.addLog("test system", "system");
-    this.addLog("test success", "success");
-    this.addLog("test warning", "warning");
-    this.addLog("test error", "error");
+    this.addLog("Logger initialized", "system");
   }
 
   private getLogColor(type: LogType): string {

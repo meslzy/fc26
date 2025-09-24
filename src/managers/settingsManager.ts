@@ -2,6 +2,8 @@ import type { StorageManager } from "./storageManager";
 
 export interface Settings {
 	search: {
+		enableDryBuy: boolean;
+		enableSound: boolean;
 		randomMinBid: {
 			enabled: boolean;
 			amount: number;
@@ -16,21 +18,26 @@ export interface Settings {
 			min: number;
 			max: number;
 		};
+		enableCycles: boolean;
+		cyclesCount: {
+			min: number;
+			max: number;
+		};
+		delayBetweenCycles: {
+			min: number;
+			max: number;
+		};
 	};
 }
 
 export class SettingsManager {
 	settings: Settings;
 
-	constructor(
-		private storageManager: StorageManager,
-	) {
-		this.loadSettings();
-	}
-
 	private get defaultSettings(): Settings {
 		return {
 			search: {
+				enableDryBuy: false,
+				enableSound: true,
 				randomMinBid: {
 					enabled: false,
 					amount: 150,
@@ -45,6 +52,15 @@ export class SettingsManager {
 					min: 4,
 					max: 7,
 				},
+				enableCycles: true,
+				cyclesCount: {
+					min: 5,
+					max: 10,
+				},
+				delayBetweenCycles: {
+					min: 60,
+					max: 120,
+				},
 			},
 		};
 	}
@@ -55,6 +71,22 @@ export class SettingsManager {
 
 	private saveSettings() {
 		this.storageManager.saveSettings(this.settings);
+	}
+
+	constructor(
+		private storageManager: StorageManager,
+	) {
+		this.loadSettings();
+	}
+
+	enableDryBuy(enabled: boolean) {
+		this.settings.search.enableDryBuy = enabled;
+		this.saveSettings();
+	}
+
+	enableSound(enabled: boolean) {
+		this.settings.search.enableSound = enabled;
+		this.saveSettings();
 	}
 
 	updateRandomMinBid(enabled: boolean, amount?: number) {
@@ -79,6 +111,23 @@ export class SettingsManager {
 		this.saveSettings();
 	}
 
+	enableCycles(enabled: boolean) {
+		this.settings.safety.enableCycles = enabled;
+		this.saveSettings();
+	}
+
+	updateCyclesCount(min: number, max: number) {
+		this.settings.safety.cyclesCount.min = min;
+		this.settings.safety.cyclesCount.max = max;
+		this.saveSettings();
+	}
+
+	updateDelayBetweenCycles(min: number, max: number) {
+		this.settings.safety.delayBetweenCycles.min = min;
+		this.settings.safety.delayBetweenCycles.max = max;
+		this.saveSettings();
+	}
+
 	getRandomMinBid(): { enabled: boolean; amount: number } {
 		return this.settings.search.randomMinBid;
 	}
@@ -89,6 +138,18 @@ export class SettingsManager {
 
 	getDelayBetweenSearches(): { min: number; max: number } {
 		return this.settings.safety.delayBetweenSearches;
+	}
+
+	getEnableCycles(): boolean {
+		return this.settings.safety.enableCycles;
+	}
+
+	getCyclesCount(): { min: number; max: number } {
+		return this.settings.safety.cyclesCount;
+	}
+
+	getDelayBetweenCycles(): { min: number; max: number } {
+		return this.settings.safety.delayBetweenCycles;
 	}
 
 	reset() {

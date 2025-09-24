@@ -1,5 +1,15 @@
+export interface Coins {
+  type: string
+  amount: number
+}
+
+export interface User {
+  id: string;
+  coins: Coins;
+}
+
 export class UserService {
-  private getUser() {
+  private getUser(): User {
     return services.User.getUser();
   }
 

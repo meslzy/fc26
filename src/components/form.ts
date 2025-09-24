@@ -11,7 +11,6 @@ export const createLabel = (props: LabelProps) => {
 	label.style.cssText = `
 		color: #fcfcfc;
 		font-size: 12px;
-		font-weight: bold;
 		margin-bottom: 6px;
 		display: block;
 		text-transform: uppercase;

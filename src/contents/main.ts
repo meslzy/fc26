@@ -6,7 +6,7 @@ import { StorageManager } from "~/managers/storageManager";
 import { AudioService } from "~/services/audioService";
 import { FilterService } from "~/services/filterService";
 import { LoggerService } from "~/services/loggerService";
-import { SettingsService } from "~/services/settings.services";
+import { SettingsService } from "~/services/settingsServices";
 import { SniperService } from "~/services/sniperService";
 import { StaticService } from "~/services/staticService";
 import { UserService } from "~/services/userService";
