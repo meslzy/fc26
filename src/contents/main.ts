@@ -1,9 +1,15 @@
 import type { PlasmoCSConfig } from "plasmo";
+import { FilterManager } from "~/managers/filterManager";
+import { SearchManager } from "~/managers/searchManager";
+import { SettingsManager } from "~/managers/settingsManager";
+import { StorageManager } from "~/managers/storageManager";
+import { AudioService } from "~/services/audioService";
 import { FilterService } from "~/services/filterService";
 import { LoggerService } from "~/services/loggerService";
 import { SettingsService } from "~/services/settings.services";
 import { SniperService } from "~/services/sniperService";
 import { StaticService } from "~/services/staticService";
+import { UserService } from "~/services/userService";
 import type { SearchBucket } from "~/types/fc";
 
 export const config: PlasmoCSConfig = {
@@ -13,15 +19,27 @@ export const config: PlasmoCSConfig = {
 	world: "MAIN",
 };
 
-const filterService = new FilterService();
+const storageManager = new StorageManager();
+const searchManager = new SearchManager();
+const settingsManager = new SettingsManager(storageManager);
+const filterManager = new FilterManager(storageManager, searchManager);
+
+const filterService = new FilterService(filterManager);
 const staticService = new StaticService();
 const loggerService = new LoggerService();
-const sniperService = new SniperService();
-const settingsService = new SettingsService();
+const settingsService = new SettingsService(settingsManager);
 
-sniperService.onSettingsClick = () => {
-	settingsService.showSettings();
-};
+const audioService = new AudioService();
+const userService = new UserService();
+
+const sniperService = new SniperService(
+	audioService,
+	userService,
+	filterService,
+	staticService,
+	loggerService,
+	settingsService,
+);
 
 const UTBucketedItemSearchViewModel__setSearchBucket =
 	UTBucketedItemSearchViewModel.prototype.setSearchBucket;
@@ -38,7 +56,9 @@ const UTMarketSearchFiltersView__generate =
 UTMarketSearchFiltersView.prototype._generate = function _generate() {
 	UTMarketSearchFiltersView__generate.call(this);
 
-	const pinnedListContainer = this.__root.querySelector(".ut-pinned-list-container") as HTMLElement;
+	const pinnedListContainer = this.__root.querySelector(
+		".ut-pinned-list-container",
+	) as HTMLElement;
 	pinnedListContainer.style.display = "flex";
 	pinnedListContainer.style.flexDirection = "row";
 	pinnedListContainer.style.gap = "10px";

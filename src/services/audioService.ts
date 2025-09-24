@@ -5,7 +5,7 @@ import failSoundUrl from "url:~/assets/sounds/fail.mp3";
 // @ts-expect-error: its custom module declaration
 import successSoundUrl from "url:~/assets/sounds/success.mp3";
 
-export class AudioManager {
+export class AudioService {
   private isEnabled: boolean = true;
 
   private audioCache = new Map<string, HTMLAudioElement>();

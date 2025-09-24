@@ -1,12 +1,12 @@
 import type { SearchBucket } from "~/types/fc";
-import {
-	type PlayerData,
-	type SearchCriteria,
+import type {
+	PlayerData,
+	SearchCriteria,
 	SearchManager,
 } from "./searchManager";
-import { StorageManager } from "./storageManager";
+import type { StorageManager } from "./storageManager";
 
-export interface FilterItem {
+export interface Filter {
 	id: string;
 	name: string;
 	searchBucket: SearchBucket;
@@ -16,21 +16,23 @@ export interface FilterItem {
 }
 
 export class FilterManager {
-	private searchManager: SearchManager;
+	private selectedFilters: Map<SearchBucket, Set<string>> = new Map();
 
-	filters: FilterItem[] = [];
+	filters: Filter[] = [];
 
-	constructor() {
-		this.searchManager = new SearchManager();
+	constructor(
+		private storageManager: StorageManager,
+		private searchManager: SearchManager,
+	) {
 		this.loadFilters();
 	}
 
 	private loadFilters() {
-		this.filters = StorageManager.loadFilters();
+		this.filters = this.storageManager.loadFilters();
 	}
 
 	private saveFilters() {
-		StorageManager.saveFilters(this.filters);
+		this.storageManager.saveFilters(this.filters);
 	}
 
 	private getName(
@@ -59,7 +61,9 @@ export class FilterManager {
 		}
 
 		if (baseName) {
-			const priceChanges = changes.filter(c => c.includes("Min:") || c.includes("Max:"));
+			const priceChanges = changes.filter(
+				(c) => c.includes("Min:") || c.includes("Max:"),
+			);
 			if (priceChanges.length > 0) {
 				return `${baseName} | ${priceChanges.join(", ")}`;
 			}
@@ -132,7 +136,7 @@ export class FilterManager {
 
 		const id = Date.now().toString();
 
-		const data: FilterItem = {
+		const data: Filter = {
 			id,
 			name: this.getName(searchCriteria, playerData),
 			searchBucket,
@@ -146,12 +150,12 @@ export class FilterManager {
 	}
 
 	remove(id: string) {
-		this.filters = this.filters.filter(filter => filter.id !== id);
+		this.filters = this.filters.filter((filter) => filter.id !== id);
 		this.saveFilters();
 	}
 
 	select(id: string) {
-		const filter = this.filters.find(f => f.id === id);
+		const filter = this.filters.find((f) => f.id === id);
 
 		this.searchManager.setSearch(
 			filter ? filter.searchCriteria : {},
@@ -160,7 +164,7 @@ export class FilterManager {
 	}
 
 	update(id: string, searchBucket: SearchBucket) {
-		const filterIndex = this.filters.findIndex(f => f.id === id);
+		const filterIndex = this.filters.findIndex((f) => f.id === id);
 		if (filterIndex === -1) return;
 
 		const searchCriteria = this.searchManager.getSearchCriteria();
@@ -179,7 +183,48 @@ export class FilterManager {
 	}
 
 	clearAll(searchBucket: SearchBucket) {
-		this.filters = this.filters.filter(filter => filter.searchBucket !== searchBucket);
+		this.filters = this.filters.filter(
+			(filter) => filter.searchBucket !== searchBucket,
+		);
 		this.saveFilters();
+		this.selectedFilters.delete(searchBucket);
+	}
+
+	toggleSelection(filterId: string, searchBucket: SearchBucket) {
+		if (!this.selectedFilters.has(searchBucket)) {
+			this.selectedFilters.set(searchBucket, new Set());
+		}
+
+		const bucketSelections = this.selectedFilters.get(searchBucket)!;
+
+		if (bucketSelections.has(filterId)) {
+			bucketSelections.delete(filterId);
+		} else {
+			bucketSelections.add(filterId);
+		}
+	}
+
+	selectAll(searchBucket: SearchBucket) {
+		const bucketFilters = this.filters.filter(
+			(f) => f.searchBucket === searchBucket,
+		);
+		const filterIds = new Set(bucketFilters.map((f) => f.id));
+		this.selectedFilters.set(searchBucket, filterIds);
+	}
+
+	deselectAll(searchBucket: SearchBucket) {
+		this.selectedFilters.set(searchBucket, new Set());
+	}
+
+	isSelected(filterId: string, searchBucket: SearchBucket): boolean {
+		return this.selectedFilters.get(searchBucket)?.has(filterId) || false;
+	}
+
+	getSelectedCount(searchBucket: SearchBucket): number {
+		return this.selectedFilters.get(searchBucket)?.size || 0;
+	}
+
+	getTotalCount(searchBucket: SearchBucket): number {
+		return this.filters.filter((f) => f.searchBucket === searchBucket).length;
 	}
 }

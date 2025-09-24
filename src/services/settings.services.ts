@@ -1,10 +1,6 @@
 import { createButton } from "~/components/button";
-import {
-  createCheckbox,
-  createCheckboxInput,
-  createInput,
-  createRangeInput,
-} from "~/components/form";
+import { createCheckboxInput, createRangeInput } from "~/components/form";
+import type { SettingsManager } from "~/managers/settingsManager";
 
 export class SettingsService {
   private modal: HTMLElement;
@@ -13,7 +9,7 @@ export class SettingsService {
   private modalCloseButton: HTMLButtonElement;
   private tabContainer: HTMLElement;
   private contentContainer: HTMLElement;
-  private currentTab: string = "Safety";
+  private currentTab: string = "Search";
   private tabs: Map<string, () => HTMLElement> = new Map();
 
   private createModal() {
@@ -128,76 +124,88 @@ export class SettingsService {
     }
   }
 
-  private createSafetyTabContent(): HTMLElement {
+  private createTabContentContainer(title: string): HTMLElement {
     const container = document.createElement("div");
     container.style.display = "flex";
     container.style.flexDirection = "column";
     container.style.gap = "12px";
 
-    const title = document.createElement("h3");
-    title.textContent = "Safety Settings";
-    title.style.color = "#fcfcfc";
-    title.style.fontSize = "16px";
-    container.appendChild(title);
-
-    const delayInput = createInput({
-      label: "Delay Between Search",
-      type: "tel",
-      value: "1000",
-      placeholder: "Enter delay in milliseconds",
-      min: 100,
-      max: 10000,
-      onchange: (value) => {
-        console.log("Delay changed:", value);
-      },
-    });
-
-    container.appendChild(delayInput.container);
-
-    const enableCheckbox = createCheckbox({
-      label: "Enable Safety Mode",
-      checked: true,
-      onchange: (checked) => {
-        console.log("Safety mode:", checked);
-      },
-    });
-
-    container.appendChild(enableCheckbox.container);
-
-    const priceRange = createRangeInput({
-      label: "Price Range",
-      minValue: 1000,
-      maxValue: 50000,
-      minLabel: "Min Price",
-      maxLabel: "Max Price",
-      onMinChange: (value) => {
-        console.log("Min price changed:", value);
-      },
-      onMaxChange: (value) => {
-        console.log("Max price changed:", value);
-      },
-    });
-
-    container.appendChild(priceRange.container);
-
-    const stopSearchControl = createCheckboxInput({
-      label: "Stop Search After",
-      checked: false,
-      inputValue: "100",
-      inputPlaceholder: "Enter number of searches",
-      inputType: "tel",
-      inputMin: 1,
-      inputMax: 1000,
-      onCheckboxChange: (checked) => console.log("Stop enabled:", checked),
-      onInputChange: (value) => console.log("Stop after:", value)
-    });
-
-    container.appendChild(stopSearchControl.container);
+    const header = document.createElement("h3");
+    header.textContent = title;
+    header.style.color = "#fcfcfc";
+    header.style.fontSize = "16px";
+    container.appendChild(header);
 
     return container;
   }
 
-  addTab(name: string, contentCreator: () => HTMLElement) {
+  private createSearchTabContent(): HTMLElement {
+    const container = this.createTabContentContainer("Search Settings");
+
+    const currentRandomMinBid = this.settingsManager.getRandomMinBid();
+    const randomMinBidControl = createCheckboxInput({
+      label: "Random Min Bid Buy",
+      checked: currentRandomMinBid.enabled,
+      inputValue: currentRandomMinBid.amount.toString(),
+      inputPlaceholder: "Enter min amount",
+      inputType: "tel",
+      inputMin: 0,
+      inputMax: 14_999_000,
+      onCheckboxChange: (checked) => {
+        this.settingsManager.updateRandomMinBid(checked);
+      },
+      onInputChange: (value) => {
+        const amount = parseFloat(value) || 0;
+        this.settingsManager.updateRandomMinBid(currentRandomMinBid.enabled, amount);
+      },
+    });
+
+    const currentRandomMinBuy = this.settingsManager.getRandomMinBuy();
+    const randomMinBuyControl = createCheckboxInput({
+      label: "Use Random Min Buy",
+      checked: currentRandomMinBuy.enabled,
+      inputValue: currentRandomMinBuy.amount.toString(),
+      inputPlaceholder: "Enter min amount",
+      inputType: "tel",
+      inputMin: 0,
+      inputMax: 15_000_000,
+      onCheckboxChange: (checked) => {
+        this.settingsManager.updateRandomMinBuy(checked);
+      },
+      onInputChange: (value) => {
+        const amount = parseFloat(value) || 0;
+        this.settingsManager.updateRandomMinBuy(currentRandomMinBuy.enabled, amount);
+      },
+    });
+
+    container.appendChild(randomMinBidControl.container);
+    container.appendChild(randomMinBuyControl.container);
+
+    return container;
+  }
+
+  private createSafetyTabContent(): HTMLElement {
+    const container = this.createTabContentContainer("Safety Settings");
+
+    const currentDelayBetweenSearches = this.settingsManager.getDelayBetweenSearches();
+    const delayBetweenSearches = createRangeInput({
+      label: "Delay Between Searches (Selected randomly between min and max)",
+      minLabel: "Min (seconds)",
+      maxLabel: "Max (seconds)",
+      minBound: 1,
+      defaultMinValue: currentDelayBetweenSearches.min,
+      defaultMaxValue: currentDelayBetweenSearches.max,
+      onchange: (min, max) => {
+        this.settingsManager.updateDelayBetweenSearches(min, max);
+      },
+    });
+
+    container.appendChild(delayBetweenSearches.container);
+
+    return container;
+  }
+
+  private addTab(name: string, contentCreator: () => HTMLElement) {
     this.tabs.set(name, contentCreator);
     this.updateTabButtons();
     if (this.currentTab === name) {
@@ -205,8 +213,11 @@ export class SettingsService {
     }
   }
 
-  constructor() {
+  constructor(
+    private settingsManager: SettingsManager
+  ) {
     this.createModal();
+    this.addTab("Search", () => this.createSearchTabContent());
     this.addTab("Safety", () => this.createSafetyTabContent());
   }
 

@@ -1,10 +1,8 @@
 import { createButton, createStaticButton } from "~/components/button";
-import { FilterManager } from "~/managers/filterManager";
+import type { FilterManager } from "~/managers/filterManager";
 import { SearchBucket } from "~/types/fc";
 
 export class FilterService {
-	private filterManager: FilterManager;
-
 	private buttonContainer: HTMLElement;
 	private saveFilterButton: HTMLButtonElement;
 	private manageFiltersButton: HTMLButtonElement;
@@ -15,6 +13,8 @@ export class FilterService {
 	private modalContent: HTMLElement;
 	private modalCloseButton: HTMLButtonElement;
 	private modalClearAllButton: HTMLButtonElement;
+	private selectAllButton: HTMLButtonElement;
+	private deselectAllButton: HTMLButtonElement;
 
 	private searchBucket: SearchBucket = SearchBucket.PLAYER;
 	private editingFilterId: string | null = null;
@@ -31,6 +31,7 @@ export class FilterService {
 					this.exitEditMode();
 				} else {
 					this.updateModalContent();
+					this.updateSelectedCount();
 					this.modal.style.display = "flex";
 				}
 			},
@@ -47,6 +48,7 @@ export class FilterService {
 				} else {
 					this.filterManager.save(this.searchBucket);
 					this.saveFilterButton.textContent = "Saved!";
+					this.updateSelectedCount();
 					setTimeout(() => {
 						this.saveFilterButton.textContent = "Save";
 					}, 1500);
@@ -91,6 +93,26 @@ export class FilterService {
 		this.modalContent.style.padding = "10px";
 		this.modalContent.style.overflowY = "auto";
 
+		this.selectAllButton = createButton({
+			value: "Select All",
+			size: "mini",
+			onclick: () => {
+				this.filterManager.selectAll(this.searchBucket);
+				this.updateModalContent();
+				this.updateSelectedCount();
+			},
+		});
+
+		this.deselectAllButton = createButton({
+			value: "Deselect All",
+			size: "mini",
+			onclick: () => {
+				this.filterManager.deselectAll(this.searchBucket);
+				this.updateModalContent();
+				this.updateSelectedCount();
+			},
+		});
+
 		this.modalClearAllButton = createButton({
 			value: "Clear All",
 			size: "mini",
@@ -98,6 +120,7 @@ export class FilterService {
 			onclick: () => {
 				this.filterManager.clearAll(this.searchBucket);
 				this.updateModalContent();
+				this.updateSelectedCount();
 			},
 		});
 
@@ -109,6 +132,12 @@ export class FilterService {
 			},
 		});
 
+		const selectionButtonContainer = document.createElement("div");
+		selectionButtonContainer.classList.add("button-container");
+		selectionButtonContainer.style.padding = "10px 10px 0 10px";
+		selectionButtonContainer.appendChild(this.selectAllButton);
+		selectionButtonContainer.appendChild(this.deselectAllButton);
+
 		const modalButtonContainer = document.createElement("div");
 		modalButtonContainer.classList.add("button-container");
 		modalButtonContainer.style.padding = "10px";
@@ -116,6 +145,7 @@ export class FilterService {
 		modalButtonContainer.appendChild(this.modalCloseButton);
 
 		this.modal.appendChild(this.modalTitle);
+		this.modal.appendChild(selectionButtonContainer);
 		this.modal.appendChild(this.modalContent);
 		this.modal.appendChild(modalButtonContainer);
 	}
@@ -123,7 +153,9 @@ export class FilterService {
 	private updateModalContent() {
 		this.modalContent.innerHTML = "";
 
-		const currentFilters = this.filterManager.filters.filter(f => f.searchBucket === this.searchBucket);
+		const currentFilters = this.filterManager.filters.filter(
+			(f) => f.searchBucket === this.searchBucket,
+		);
 
 		if (currentFilters.length === 0) {
 			const emptyMessage = document.createElement("div");
@@ -135,7 +167,7 @@ export class FilterService {
 			return;
 		}
 
-		currentFilters.forEach(filter => {
+		currentFilters.forEach((filter) => {
 			const filterItem = document.createElement("div");
 			filterItem.style.padding = "8px";
 			filterItem.style.marginBottom = "5px";
@@ -146,6 +178,29 @@ export class FilterService {
 			filterItem.style.justifyContent = "space-between";
 			filterItem.style.alignItems = "center";
 
+			const leftContainer = document.createElement("div");
+			leftContainer.style.display = "flex";
+			leftContainer.style.alignItems = "center";
+			leftContainer.style.flex = "1";
+			leftContainer.style.gap = "8px";
+
+			const checkbox = document.createElement("input");
+			checkbox.type = "checkbox";
+			checkbox.checked = this.filterManager.isSelected(
+				filter.id,
+				this.searchBucket,
+			);
+			checkbox.style.cssText = `
+				width: 16px;
+				height: 16px;
+				cursor: pointer;
+				accent-color: #1fc3c1;
+			`;
+			checkbox.addEventListener("change", () => {
+				this.filterManager.toggleSelection(filter.id, this.searchBucket);
+				this.updateSelectedCount();
+			});
+
 			const filterName = document.createElement("span");
 			filterName.textContent = filter.name;
 			filterName.style.flex = "1";
@@ -154,6 +209,9 @@ export class FilterService {
 				this.filterManager.select(filter.id);
 				this.modal.style.display = "none";
 			};
+
+			leftContainer.appendChild(checkbox);
+			leftContainer.appendChild(filterName);
 
 			const buttonContainer = document.createElement("div");
 			buttonContainer.style.display = "flex";
@@ -179,6 +237,7 @@ export class FilterService {
 				onclick: () => {
 					this.filterManager.remove(filter.id);
 					this.updateModalContent();
+					this.updateSelectedCount();
 				},
 			});
 			removeButton.style.minWidth = "24px";
@@ -190,7 +249,7 @@ export class FilterService {
 			buttonContainer.appendChild(editButton);
 			buttonContainer.appendChild(removeButton);
 
-			filterItem.appendChild(filterName);
+			filterItem.appendChild(leftContainer);
 			filterItem.appendChild(buttonContainer);
 			this.modalContent.appendChild(filterItem);
 		});
@@ -210,15 +269,27 @@ export class FilterService {
 		this.saveFilterButton.textContent = "Save";
 	}
 
-	constructor() {
-		this.filterManager = new FilterManager();
+	private updateSelectedCount() {
+		const selectedCount = this.filterManager.getSelectedCount(
+			this.searchBucket,
+		);
+		const totalCount = this.filterManager.getTotalCount(this.searchBucket);
+		this.selectedFiltersButton.textContent = `Selected (${selectedCount}/${totalCount})`;
+	}
+
+	constructor(private filterManager: FilterManager) {
 		this.createbuttonContainer();
 		this.createModal();
+		this.updateSelectedCount();
 	}
 
 	onSearchBucket = (searchBucket: SearchBucket) => {
+		if (this.editingFilterId) {
+			this.exitEditMode();
+		}
 		this.searchBucket = searchBucket;
 		this.updateModalContent();
+		this.updateSelectedCount();
 	};
 
 	init = (container: HTMLElement) => {

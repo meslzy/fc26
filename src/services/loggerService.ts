@@ -16,6 +16,7 @@ export class LoggerService {
     this.logContent = document.createElement("div");
     this.logContent.style.cssText = `
 			height: calc(100% - 45px);
+      overflow-x: hidden;
 			overflow-y: auto;
 			font-size: 13px;
 			line-height: 1.5;
