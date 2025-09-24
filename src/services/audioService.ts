@@ -1,9 +1,9 @@
 // @ts-expect-error: its custom module declaration
-import errorSoundUrl from "url:~/assets/sounds/error.mp3";
+import errorSoundUrl from "data-base64:~/sounds/error.mp3";
 // @ts-expect-error: its custom module declaration
-import failSoundUrl from "url:~/assets/sounds/fail.mp3";
+import failSoundUrl from "data-base64:~/sounds/fail.mp3";
 // @ts-expect-error: its custom module declaration
-import successSoundUrl from "url:~/assets/sounds/success.mp3";
+import successSoundUrl from "data-base64:~/sounds/success.mp3";
 
 export class AudioService {
   private isEnabled: boolean = true;
