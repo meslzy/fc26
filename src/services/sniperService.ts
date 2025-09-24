@@ -23,7 +23,7 @@ export class SniperService {
 	private state: SniperState = SniperState.STOP;
 	private interval: NodeJS.Timeout | null = null;
 
-	private searchCounter = 1;
+	private searchCounter = 0;
 	private cycleCount = 0;
 
 	private consecutiveFailures = 0;
@@ -63,7 +63,7 @@ export class SniperService {
 			"info",
 		);
 
-		this.searchCounter = 1;
+		this.searchCounter = 0;
 		this.cycleCount = 0;
 		this.consecutiveFailures = 0;
 		this.seenTradeIds.clear();
@@ -283,8 +283,8 @@ export class SniperService {
 		this.processSearchResults(response.data.items, settings);
 		this.sendPinEvents("Transfer Market Search");
 
-		this.consecutiveFailures = 0;
 		this.staticService.increment("Searches");
+		this.consecutiveFailures = 0;
 		this.searchCounter += 1;
 		this.cycleCount += 1;
 
@@ -346,8 +346,6 @@ export class SniperService {
 			return;
 		}
 
-		this.staticService.increment("Searches");
-
 		const searchCriteria =
 			searchCriterias[this.searchCounter % searchCriterias.length];
 
@@ -374,20 +372,6 @@ export class SniperService {
 				settings,
 			)
 		);
-
-		// this.staticService.increment("Searches");
-
-		// this.counter += 1;
-
-		// const delayBetweenSearches = Math.floor(
-		// 	Math.random()
-		// 	* (settings.safety.delayBetweenSearches.max - settings.safety.delayBetweenSearches.min + 1)
-		// 	+ settings.safety.delayBetweenSearches.min,
-		// ) * 1000;
-
-		// this.interval = setTimeout(() => {
-		// 	this.performSearch(searchBucket, searchCriterias, settings);
-		// }, delayBetweenSearches);
 	}
 
 	private createButtonContainer() {
