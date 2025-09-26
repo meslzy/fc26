@@ -186,8 +186,6 @@ export class SniperService {
 		settings: Settings,
 		filter: Filter,
 	) {
-		this.sendPinEvents("Transfer Market Results - List View");
-
 		if (items.length > 5) {
 			this.loggerService.addLog(
 				`SAFEGUARD: Too many results (${items.length}) - STOPPING to prevent mass buying!`,
@@ -196,10 +194,6 @@ export class SniperService {
 			this.audioService.error();
 			this.stop();
 			return;
-		}
-
-		if (items.length > 0) {
-			this.sendPinEvents("Transfer Market Results - List View");
 		}
 
 		for (const item of items) {
@@ -237,8 +231,8 @@ export class SniperService {
 			return;
 		}
 
+		this.sendPinEvents("Transfer Market Results - List View");
 		this.processSearchResults(response.data.items, settings, currentFilter);
-		this.sendPinEvents("Transfer Market Search");
 
 		this.staticService.increment("Searches");
 		this.consecutiveFailures = 0;
@@ -279,6 +273,7 @@ export class SniperService {
 					"info",
 				);
 
+				this.sendPinEvents("Transfer Market Search");
 				this.performSearch(searchBucket, filters, settings);
 			}, delayBetweenCycles);
 		} else {
@@ -289,6 +284,7 @@ export class SniperService {
 			) * 1000;
 
 			this.interval = setTimeout(() => {
+				this.sendPinEvents("Transfer Market Search");
 				this.performSearch(searchBucket, filters, settings);
 			}, delayBetweenSearches);
 		}

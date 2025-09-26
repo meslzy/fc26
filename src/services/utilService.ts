@@ -1,4 +1,6 @@
 
+import { getValidPrice } from "~/core/price";
+
 export class UtilService {
   private profitLabel: HTMLElement;
 
@@ -6,30 +8,9 @@ export class UtilService {
     return parseInt(value.replace(/,/g, ''), 10) || 0;
   }
 
-  private getValidBuyPrice(price: number): number {
-    if (price <= 1000) {
-      return Math.floor(price / 50) * 50;
-    }
-    if (price <= 10000) {
-      return Math.floor(price / 100) * 100;
-    }
-    if (price <= 50000) {
-      return Math.floor(price / 250) * 250;
-    }
-    if (price <= 100000) {
-      return Math.floor(price / 500) * 500;
-    }
-    return Math.floor(price / 1000) * 1000;
-  }
-
-  private calculateMaxBuyPrice(sellPrice: number): number {
-    const maxBuyPrice = sellPrice * 0.95;
-    return this.getValidBuyPrice(maxBuyPrice);
-  }
-
   private updateProfitLabel(sellPrice: number) {
     if (sellPrice > 0) {
-      const maxBuyPrice = this.calculateMaxBuyPrice(sellPrice);
+      const maxBuyPrice = getValidPrice(sellPrice * 0.95);
       this.profitLabel.textContent = `Buy for ${maxBuyPrice.toLocaleString()} for minimum profit (0% loss)`;
     } else {
       this.profitLabel.textContent = "";
