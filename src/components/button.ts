@@ -16,13 +16,21 @@ style.textContent = `
   .danger.hover:not(:disabled) {
     background-color: #c9302c;
   }
+  .utility {
+    background-color: #5cb85c;
+    color: #fcfcfc;
+    border: none;
+  }
+  .utility.hover:not(:disabled) {
+    background-color: #449d44;
+  }
 `;
 document.head.appendChild(style);
 
 export interface ButtonProps {
   value: string;
   onclick: () => void;
-  variant?: "primary" | "danger" | "secondary";
+  variant?: "primary" | "danger" | "secondary" | "utility";
   size?: "mini";
   style?: Partial<CSSStyleDeclaration>;
 }
@@ -40,6 +48,7 @@ export const createButton = (props: ButtonProps) => {
   if (variant === "primary") button.classList.add("primary");
   if (variant === "secondary") button.classList.add("secondary");
   if (variant === "danger") button.classList.add("danger");
+  if (variant === "utility") button.classList.add("utility");
 
   Object.assign(button.style, style);
 

@@ -6,11 +6,13 @@ import { SettingsManager } from "~/managers/settingsManager";
 import { StorageManager } from "~/managers/storageManager";
 import { AudioService } from "~/services/audioService";
 import { FilterService } from "~/services/filterService";
+import { FinderService } from "~/services/finderService";
 import { LoggerService } from "~/services/loggerService";
-import { SettingsService } from "~/services/settingsServices";
+import { SettingsService } from "~/services/settingsService";
 import { SniperService } from "~/services/sniperService";
 import { StaticService } from "~/services/staticService";
 import { UserService } from "~/services/userService";
+import { UtilService } from "~/services/utilService";
 
 export const config: PlasmoCSConfig = {
 	all_frames: false,
@@ -28,9 +30,10 @@ const filterService = new FilterService(filterManager);
 const staticService = new StaticService();
 const loggerService = new LoggerService();
 const settingsService = new SettingsService(settingsManager);
-
-const audioService = new AudioService();
+const audioService = new AudioService(settingsManager);
 const userService = new UserService();
+const utilService = new UtilService();
+const finderService = new FinderService(searchManager, loggerService);
 
 const sniperService = new SniperService(
 	audioService,
@@ -61,14 +64,16 @@ UTMarketSearchFiltersView.prototype._generate = function _generate() {
 	) as HTMLElement;
 	pinnedListContainer.style.display = "flex";
 	pinnedListContainer.style.flexDirection = "row";
-	pinnedListContainer.style.gap = "10px";
+	pinnedListContainer.style.gap = "15px";
 
 	this.__searchContainer.style.flex = "1";
 	this.__searchContainer.style.maxWidth = "none";
 	this.__searchContainer.style.maxHeight = "90%";
 	this.__searchContainer.style.position = "relative";
 
+	finderService.init(this.__searchContainer);
 	filterService.init(this.__searchContainer);
+	utilService.init(this.__searchContainer);
 
 	const seachContainer = this.__searchContainer.parentElement as HTMLElement;
 
@@ -79,7 +84,7 @@ UTMarketSearchFiltersView.prototype._generate = function _generate() {
 	panel.style.maxHeight = "90%";
 	panel.style.display = "flex";
 	panel.style.flexDirection = "column";
-	panel.style.gap = "10px";
+	panel.style.gap = "15px";
 	panel.style.position = "relative";
 
 	staticService.init(panel);

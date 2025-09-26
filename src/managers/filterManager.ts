@@ -228,21 +228,33 @@ export class FilterManager {
 		return this.filters.filter((f) => f.searchBucket === searchBucket).length;
 	}
 
-	getSearchCriterias(searchBucket: SearchBucket): SearchCriteria[] {
+	getFilters(searchBucket: SearchBucket): Filter[] {
 		const selectedIds = this.selectedFilters.get(searchBucket) || new Set();
 
-		const criteria: SearchCriteria[] = [];
+		const filters: Filter[] = [];
 
 		for (const filter of this.filters) {
 			if (selectedIds.has(filter.id)) {
-				criteria.push(filter.searchCriteria);
+				filters.push(filter);
 			}
 		}
 
-		if (criteria.length === 0) {
-			criteria.push(this.searchManager.getSearchCriteria());
+		if (filters.length === 0) {
+			const searchCriteria = this.searchManager.getSearchCriteria();
+			const playerData = this.searchManager.getSearchPlayerData();
+
+			const defaultFilter: Filter = {
+				id: "default",
+				name: this.getName(searchCriteria, playerData),
+				searchBucket,
+				playerData,
+				searchCriteria,
+				timestamp: Date.now(),
+			};
+
+			filters.push(defaultFilter);
 		}
 
-		return criteria;
+		return filters;
 	}
 }

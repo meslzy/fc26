@@ -1,5 +1,5 @@
 import { createButton } from "~/components/button";
-import { createCheckbox, createCheckboxInput, createRangeInput } from "~/components/form";
+import { createCheckbox, createCheckboxInput, createInput, createRangeInput } from "~/components/form";
 import type { SettingsManager } from "~/managers/settingsManager";
 
 export class SettingsService {
@@ -146,60 +146,99 @@ export class SettingsService {
       label: "Enable Dry Buy (Simulate purchases without actually buying)",
       checked: this.settingsManager.settings.search.enableDryBuy,
       onchange: (checked) => {
-        this.settingsManager.enableDryBuy(checked);
+        this.settingsManager.settings.search.enableDryBuy = checked;
+        this.settingsManager.save();
       },
     });
-
-    const enableSoundCheckbox = createCheckbox({
-      label: "Enable Sound Notifications",
-      checked: this.settingsManager.settings.search.enableSound,
-      onchange: (checked) => {
-        this.settingsManager.enableSound(checked);
-      },
-    });
-
-    const currentRandomMinBid = this.settingsManager.getRandomMinBid();
 
     const randomMinBidControl = createCheckboxInput({
       label: "Random Min Bid Buy",
-      checked: currentRandomMinBid.enabled,
-      inputValue: currentRandomMinBid.amount.toString(),
+      checked: this.settingsManager.settings.search.randomMinBid.enabled,
+      inputValue: this.settingsManager.settings.search.randomMinBid.amount.toString(),
       inputPlaceholder: "Enter min amount",
       inputType: "tel",
       inputMin: 150,
       inputMax: 14_999_000,
       onCheckboxChange: (checked) => {
-        this.settingsManager.updateRandomMinBid(checked);
+        this.settingsManager.settings.search.randomMinBid.enabled = checked;
+        this.settingsManager.save();
       },
       onInputChange: (value) => {
         const amount = parseFloat(value) || 0;
-        this.settingsManager.updateRandomMinBid(currentRandomMinBid.enabled, amount);
+        this.settingsManager.settings.search.randomMinBid.amount = amount;
+        this.settingsManager.save();
       },
     });
 
-    const currentRandomMinBuy = this.settingsManager.getRandomMinBuy();
-
     const randomMinBuyControl = createCheckboxInput({
       label: "Use Random Min Buy",
-      checked: currentRandomMinBuy.enabled,
-      inputValue: currentRandomMinBuy.amount.toString(),
+      checked: this.settingsManager.settings.search.randomMinBuy.enabled,
+      inputValue: this.settingsManager.settings.search.randomMinBuy.amount.toString(),
       inputPlaceholder: "Enter min amount",
       inputType: "tel",
       inputMin: 200,
       inputMax: 15_000_000,
       onCheckboxChange: (checked) => {
-        this.settingsManager.updateRandomMinBuy(checked);
+        this.settingsManager.settings.search.randomMinBuy.enabled = checked;
+        this.settingsManager.save();
       },
       onInputChange: (value) => {
         const amount = parseFloat(value) || 0;
-        this.settingsManager.updateRandomMinBuy(currentRandomMinBuy.enabled, amount);
+        this.settingsManager.settings.search.randomMinBuy.amount = amount;
+        this.settingsManager.save();
+      },
+    });
+
+    const enableWinSoundCheckbox = createCheckbox({
+      label: "Enable Win Sound (Play a sound when a bid or buy is successful)",
+      checked: this.settingsManager.settings.search.enableWinSound,
+      onchange: (checked) => {
+        this.settingsManager.settings.search.enableWinSound = checked;
+        this.settingsManager.save();
+      },
+    });
+
+    const enableFailSoundCheckbox = createCheckbox({
+      label: "Enable Fail Sound (Play a sound when a bid or buy fails)",
+      checked: this.settingsManager.settings.search.enableFailSound,
+      onchange: (checked) => {
+        this.settingsManager.settings.search.enableFailSound = checked;
+        this.settingsManager.save();
+      },
+    });
+
+    const enableErrorSoundCheckbox = createCheckbox({
+      label: "Enable Error Sound (Play a sound when an error occurs)",
+      checked: this.settingsManager.settings.search.enableErrorSound,
+      onchange: (checked) => {
+        this.settingsManager.settings.search.enableErrorSound = checked;
+        this.settingsManager.save();
+      },
+    });
+
+    const soundsVolumeControl = createInput({
+      label: "Sounds Volume (0 to 1)",
+      type: "tel",
+      min: 0,
+      max: 1,
+      value: this.settingsManager.settings.search.soundsVolume.toString(),
+      placeholder: "Enter volume (0 to 1)",
+      onchange: (value) => {
+        let volume = parseFloat(value);
+        if (Number.isNaN(volume) || volume < 0) volume = 0;
+        if (volume > 1) volume = 1;
+        this.settingsManager.settings.search.soundsVolume = volume;
+        this.settingsManager.save();
       },
     });
 
     container.appendChild(enableDryBuyCheckbox.container);
-    container.appendChild(enableSoundCheckbox.container);
     container.appendChild(randomMinBidControl.container);
     container.appendChild(randomMinBuyControl.container);
+    container.appendChild(enableWinSoundCheckbox.container);
+    container.appendChild(enableFailSoundCheckbox.container);
+    container.appendChild(enableErrorSoundCheckbox.container);
+    container.appendChild(soundsVolumeControl.container);
 
     return container;
   }
@@ -207,20 +246,17 @@ export class SettingsService {
   private createSafetyTabContent(): HTMLElement {
     const container = this.createTabContentContainer("Safety Settings");
 
-    const currentDelayBetweenSearches = this.settingsManager.getDelayBetweenSearches();
-    const currentCyclesEnabled = this.settingsManager.getCyclesEnabled();
-    const currentCyclesCount = this.settingsManager.getCyclesCount();
-    const currentDelayBetweenCycles = this.settingsManager.getDelayBetweenCycles();
-
     const delayBetweenSearches = createRangeInput({
       label: "Delay Between Searches (Selected randomly between min and max)",
       minLabel: "Min (seconds)",
       maxLabel: "Max (seconds)",
       minBound: 1,
-      defaultMinValue: currentDelayBetweenSearches.min,
-      defaultMaxValue: currentDelayBetweenSearches.max,
+      defaultMinValue: this.settingsManager.settings.safety.delayBetweenSearches.min,
+      defaultMaxValue: this.settingsManager.settings.safety.delayBetweenSearches.max,
       onchange: (min, max) => {
-        this.settingsManager.updateDelayBetweenSearches(min, max);
+        this.settingsManager.settings.safety.delayBetweenSearches.min = min;
+        this.settingsManager.settings.safety.delayBetweenSearches.max = max;
+        this.settingsManager.save();
       },
     });
 
@@ -229,10 +265,12 @@ export class SettingsService {
       minLabel: "Min searches",
       maxLabel: "Max searches",
       minBound: 1,
-      defaultMinValue: currentCyclesCount.min,
-      defaultMaxValue: currentCyclesCount.max,
+      defaultMinValue: this.settingsManager.settings.safety.cyclesCount.min,
+      defaultMaxValue: this.settingsManager.settings.safety.cyclesCount.max,
       onchange: (min, max) => {
-        this.settingsManager.updateCyclesCount(min, max);
+        this.settingsManager.settings.safety.cyclesCount.min = min;
+        this.settingsManager.settings.safety.cyclesCount.max = max;
+        this.settingsManager.save();
       },
     });
 
@@ -241,25 +279,27 @@ export class SettingsService {
       minLabel: "Min (seconds)",
       maxLabel: "Max (seconds)",
       minBound: 1,
-      defaultMinValue: currentDelayBetweenCycles.min,
-      defaultMaxValue: currentDelayBetweenCycles.max,
+      defaultMinValue: this.settingsManager.settings.safety.delayBetweenCycles.min,
+      defaultMaxValue: this.settingsManager.settings.safety.delayBetweenCycles.max,
       onchange: (min, max) => {
-        this.settingsManager.updateDelayBetweenCycles(min, max);
+        this.settingsManager.settings.safety.delayBetweenCycles.min = min;
+        this.settingsManager.settings.safety.delayBetweenCycles.max = max;
+        this.settingsManager.save();
       },
     });
 
     const enableCyclesCheckbox = createCheckbox({
       label: "Enable Cycles (Take breaks after a certain number of searches)",
-      checked: currentCyclesEnabled,
+      checked: this.settingsManager.settings.safety.enabledCycles,
       onchange: (checked) => {
-        this.settingsManager.enableCycles(checked);
         cyclesCount.setDisabled(!checked);
+        this.settingsManager.settings.safety.enabledCycles = checked;
         delayBetweenCycles.setDisabled(!checked);
       },
     });
 
-    cyclesCount.setDisabled(!currentCyclesEnabled);
-    delayBetweenCycles.setDisabled(!currentCyclesEnabled);
+    cyclesCount.setDisabled(!this.settingsManager.settings.safety.enabledCycles);
+    delayBetweenCycles.setDisabled(!this.settingsManager.settings.safety.enabledCycles);
 
     container.appendChild(delayBetweenSearches.container);
     container.appendChild(enableCyclesCheckbox.container);

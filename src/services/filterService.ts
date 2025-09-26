@@ -1,7 +1,6 @@
 import { createButton, createStaticButton } from "~/components/button";
 import { SearchBucket } from "~/core/bucket";
 import type { FilterManager } from "~/managers/filterManager";
-import type { SearchCriteria } from "~/managers/searchManager";
 
 export class FilterService {
 	private buttonContainer: HTMLElement;
@@ -284,18 +283,16 @@ export class FilterService {
 		this.updateSelectedCount();
 	}
 
-	getSearchBucket(): SearchBucket {
+	getSearchBucket() {
 		return this.searchBucket;
 	}
 
-	getSearchCriterias(): SearchCriteria[] {
-		return this.filterManager.getSearchCriterias(this.searchBucket);
+	getFilters() {
+		return this.filterManager.getFilters(this.searchBucket);
 	}
 
 	onSearchBucket = (searchBucket: SearchBucket) => {
-		if (this.editingFilterId) {
-			this.exitEditMode();
-		}
+		if (this.editingFilterId) this.exitEditMode();
 		this.searchBucket = searchBucket;
 		this.updateModalContent();
 		this.updateSelectedCount();

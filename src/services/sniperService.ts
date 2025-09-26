@@ -1,12 +1,13 @@
 import { createButton } from "~/components/button";
 import type { SearchBucket } from "~/core/bucket";
+import type { Filter } from "~/managers/filterManager";
 import type { SearchCriteria } from "~/managers/searchManager";
 import type { Settings } from "~/managers/settingsManager";
 import type { AudioService } from "~/services/audioService";
 import type { UserService } from "~/services/userService";
 import type { FilterService } from "./filterService";
 import type { LoggerService } from "./loggerService";
-import type { SettingsService } from "./settingsServices";
+import type { SettingsService } from "./settingsService";
 import type { StaticService } from "./staticService";
 
 export enum SniperState {
@@ -41,52 +42,6 @@ export class SniperService {
 			this.stopButton.classList.add("disabled");
 			this.stopButton.disabled = true;
 		}
-	}
-
-	private start() {
-		if (this.state === SniperState.START) {
-			this.loggerService.addLog("Sniper is already started!", "warning");
-			return;
-		}
-
-		this.state = SniperState.START;
-
-		this.updateButtonStates();
-
-		const coins = this.userService.getUserCoins().toLocaleString();
-		const searchBucket = this.filterService.getSearchBucket();
-		const searchCriterias = this.filterService.getSearchCriterias();
-		const settings = this.settingsService.getSettings();
-
-		this.loggerService.addLog(
-			`Sniper started! Coins: ${coins}, Using ${searchCriterias.length} criteria`,
-			"info",
-		);
-
-		this.searchCounter = 0;
-		this.cycleCount = 0;
-		this.consecutiveFailures = 0;
-		this.seenTradeIds.clear();
-
-		this.performSearch(searchBucket, searchCriterias, settings);
-	}
-
-	private stop() {
-		if (this.state === SniperState.STOP) {
-			this.loggerService.addLog("Sniper is already stopped!", "warning");
-			return;
-		}
-
-		this.state = SniperState.STOP;
-
-		this.updateButtonStates();
-
-		if (this.interval) {
-			clearInterval(this.interval);
-			this.interval = null;
-		}
-
-		this.loggerService.addLog("Sniper stopped!", "warning");
 	}
 
 	private generateSingleValues(limit: number, startValue: number): number[] {
@@ -201,28 +156,27 @@ export class SniperService {
 		item: any,
 		price: number,
 		settings: Settings,
+		filter: Filter,
 	) {
-		const tradeId = item._auction.tradeId;
-
 		if (settings.search.enableDryBuy) {
 			this.loggerService.addLog(
-				`${tradeId}: ${price} | dry buy, not actually buying`,
+				`${filter.name}: ${price} | dry buy, not actually buying`,
 				"success",
 			);
-			this.audioService.success();
+			this.audioService.win();
 			return;
 		}
 
 		services.Item.bid(item, price).observe(this, (_, data) => {
 			if (!data.success) {
-				this.loggerService.addLog(`${tradeId}: ${price} | buy failed`, "error");
+				this.loggerService.addLog(`${filter.name}: ${price} | buy failed`, "error");
 				this.audioService.fail();
 				this.staticService.increment("Fails");
 				return;
 			}
 
-			this.loggerService.addLog(`${tradeId}:  ${price} | bought`, "success");
-			this.audioService.success();
+			this.loggerService.addLog(`${filter.name}: ${price} | bought`, "success");
+			this.audioService.win();
 			this.staticService.increment("Wins");
 		});
 	}
@@ -230,6 +184,7 @@ export class SniperService {
 	private processSearchResults(
 		items: any[],
 		settings: Settings,
+		filter: Filter,
 	) {
 		this.sendPinEvents("Transfer Market Results - List View");
 
@@ -261,7 +216,8 @@ export class SniperService {
 			this.buyItem(
 				item,
 				buyNowPrice,
-				settings
+				settings,
+				filter
 			);
 		}
 	}
@@ -269,8 +225,9 @@ export class SniperService {
 	private handleSearchResponse(
 		response: any,
 		searchBucket: SearchBucket,
-		searchCriterias: SearchCriteria[],
+		filters: Filter[],
 		settings: Settings,
+		currentFilter: Filter,
 	) {
 		if (this.state === SniperState.STOP) {
 			return;
@@ -280,7 +237,7 @@ export class SniperService {
 			return;
 		}
 
-		this.processSearchResults(response.data.items, settings);
+		this.processSearchResults(response.data.items, settings, currentFilter);
 		this.sendPinEvents("Transfer Market Search");
 
 		this.staticService.increment("Searches");
@@ -318,11 +275,11 @@ export class SniperService {
 				const coins = this.userService.getUserCoins().toLocaleString();
 
 				this.loggerService.addLog(
-					`Resuming sniper! Coins: ${coins}, Using ${searchCriterias.length} criteria`,
+					`Resuming sniper! Coins: ${coins}, Using ${filters.length} filters`,
 					"info",
 				);
 
-				this.performSearch(searchBucket, searchCriterias, settings);
+				this.performSearch(searchBucket, filters, settings);
 			}, delayBetweenCycles);
 		} else {
 			const delayBetweenSearches = Math.floor(
@@ -332,22 +289,22 @@ export class SniperService {
 			) * 1000;
 
 			this.interval = setTimeout(() => {
-				this.performSearch(searchBucket, searchCriterias, settings);
+				this.performSearch(searchBucket, filters, settings);
 			}, delayBetweenSearches);
 		}
 	}
 
 	private performSearch(
 		searchBucket: SearchBucket,
-		searchCriterias: SearchCriteria[],
+		filters: Filter[],
 		settings: Settings,
 	) {
 		if (this.state === SniperState.STOP) {
 			return;
 		}
 
-		const searchCriteria =
-			searchCriterias[this.searchCounter % searchCriterias.length];
+		const currentFilter = filters[this.searchCounter % filters.length];
+		const searchCriteria = currentFilter.searchCriteria;
 
 		const utSearchCriteria = new UTSearchCriteriaDTO();
 		Object.assign(utSearchCriteria, searchCriteria);
@@ -368,10 +325,57 @@ export class SniperService {
 			this.handleSearchResponse(
 				response,
 				searchBucket,
-				searchCriterias,
+				filters,
 				settings,
+				currentFilter,
 			)
 		);
+	}
+
+	private start() {
+		if (this.state === SniperState.START) {
+			this.loggerService.addLog("Sniper is already started!", "warning");
+			return;
+		}
+
+		this.state = SniperState.START;
+
+		this.updateButtonStates();
+
+		const coins = this.userService.getUserCoins().toLocaleString();
+		const searchBucket = this.filterService.getSearchBucket();
+		const filters = this.filterService.getFilters();
+		const settings = this.settingsService.getSettings();
+
+		this.loggerService.addLog(
+			`Sniper started! Coins: ${coins}, Using ${filters.length} filters`,
+			"info",
+		);
+
+		this.searchCounter = 0;
+		this.cycleCount = 0;
+		this.consecutiveFailures = 0;
+		this.seenTradeIds.clear();
+
+		this.performSearch(searchBucket, filters, settings);
+	}
+
+	private stop() {
+		if (this.state === SniperState.STOP) {
+			this.loggerService.addLog("Sniper is already stopped!", "warning");
+			return;
+		}
+
+		this.state = SniperState.STOP;
+
+		this.updateButtonStates();
+
+		if (this.interval) {
+			clearInterval(this.interval);
+			this.interval = null;
+		}
+
+		this.loggerService.addLog("Sniper stopped!", "warning");
 	}
 
 	private createButtonContainer() {

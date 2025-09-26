@@ -1,6 +1,39 @@
 export class StaticService {
 	private statsContainer: HTMLElement;
 	private statsMap: Map<string, HTMLElement> = new Map();
+	private originalValues: Map<string, string> = new Map();
+
+	private resetStat(key: string) {
+		if (!this.originalValues.has(key)) return;
+
+		const statItem = this.statsMap.get(key)!;
+		const labelElement = statItem.querySelector("div:first-child") as HTMLElement;
+		const valueElement = statItem.querySelector("div:last-child") as HTMLElement;
+		const originalLabel = labelElement.textContent;
+		const originalValue = this.originalValues.get(key)!;
+
+		let animationCount = 0;
+
+		const symbols = ['$', '&', '*', '#', '@', '%', '!', '?', '^', '~'];
+
+		labelElement.textContent = "Reset";
+
+		const animateSymbols = () => {
+			if (animationCount < 8) {
+				const randomSymbols = Array.from({ length: originalValue.length || 3 }, () =>
+					symbols[Math.floor(Math.random() * symbols.length)]
+				).join('');
+				valueElement.textContent = randomSymbols;
+				animationCount++;
+				setTimeout(animateSymbols, 60);
+			} else {
+				labelElement.textContent = originalLabel;
+				valueElement.textContent = originalValue;
+			}
+		};
+
+		animateSymbols();
+	}
 
 	private createStatsContainer() {
 		this.statsContainer = document.createElement("div");
@@ -24,6 +57,7 @@ export class StaticService {
 			height: max-content;
 			text-align: center;
 			transition: all 0.3s ease;
+			cursor: pointer;
 		`;
 
 		const statLabel = document.createElement("div");
@@ -49,6 +83,8 @@ export class StaticService {
 		statItem.appendChild(statLabel);
 		statItem.appendChild(statValue);
 
+		statItem.addEventListener("click", () => this.resetStat(key));
+
 		return statItem;
 	}
 
@@ -57,6 +93,9 @@ export class StaticService {
 		this.set("Searches", "0");
 		this.set("Wins", "0");
 		this.set("Fails", "0");
+		this.originalValues.set("Searches", "0");
+		this.originalValues.set("Wins", "0");
+		this.originalValues.set("Fails", "0");
 	}
 
 	init = (container: HTMLElement) => {
@@ -64,6 +103,10 @@ export class StaticService {
 	};
 
 	set(key: string, value: string) {
+		if (!this.originalValues.has(key)) {
+			this.originalValues.set(key, value);
+		}
+
 		if (this.statsMap.has(key)) {
 			const statItem = this.statsMap.get(key)!;
 			const valueElement = statItem.querySelector("div:last-child") as HTMLElement;
