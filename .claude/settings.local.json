@@ -1,0 +1,14 @@
+{
+	"permissions": {
+		"allow": [
+			"Bash(find:*)",
+			"WebFetch(domain:docs.plasmo.com)",
+			"WebFetch(domain:github.com)",
+			"Bash(bun run:*)",
+			"Bash(tree:*)",
+			"Bash(mkdir:*)"
+		],
+		"deny": [],
+		"ask": []
+	}
+}

@@ -1,0 +1,53 @@
+{
+	"extends": "./.wxt/tsconfig.json",
+	"compilerOptions": {
+		"paths": {
+			"~": ["./src"],
+			"~/*": ["./src/*"],
+			"~~": ["."],
+			"~~/*": ["./*"]
+		},
+		// Type Checking
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false,
+		"alwaysStrict": true,
+		"exactOptionalPropertyTypes": false,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": false,
+		"noImplicitOverride": false,
+		"noImplicitReturns": false,
+		"noImplicitThis": true,
+		"noPropertyAccessFromIndexSignature": false,
+		"noUncheckedIndexedAccess": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": false,
+		"strict": true,
+		"strictBindCallApply": true,
+		"strictFunctionTypes": true,
+		"strictNullChecks": false,
+		"strictPropertyInitialization": false,
+		"useUnknownInCatchVariables": true,
+		// Modules
+		"allowImportingTsExtensions": true,
+		"allowUmdGlobalAccess": false,
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"moduleDetection": "force",
+		"resolveJsonModule": true,
+		// Emit
+		"declaration": true,
+		"newLine": "lf",
+		"noEmit": true,
+		"noEmitHelpers": true,
+		// JavaScript,
+		"allowJs": true,
+		"checkJs": false,
+		// Editor Support
+		"disableSizeLimit": false,
+		// Interop Constraints
+		"allowSyntheticDefaultImports": true,
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"preserveSymlinks": true,
+	}
+}
